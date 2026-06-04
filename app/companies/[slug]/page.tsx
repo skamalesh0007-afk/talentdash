@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import SalaryTable from '@/components/features/SalaryTable';
@@ -50,9 +51,8 @@ async function getCompanyData(slug: string) {
     distribution[s.level] = (distribution[s.level] || 0) + 1;
   }
 
-  const tcList = tcValues;
-  const minTC = tcList[0] || 0;
-  const maxTC = tcList[tcList.length - 1] || 0;
+  const minTC = tcValues[0] || 0;
+  const maxTC = tcValues[tcValues.length - 1] || 0;
 
   return {
     company: {
@@ -161,11 +161,13 @@ export default async function CompanyPage({ params }: { params: { slug: string }
         {/* Salary Table */}
         <div>
           <h2 className="text-xl font-bold text-td-black mb-4">All Salaries at {company.name}</h2>
-          <SalaryTable
-            initialData={salaries as any}
-            initialMeta={{ total, page: 1, limit: total, totalPages: 1 }}
-            showCompanyColumn={false}
-          />
+          <Suspense fallback={<div className="h-96 bg-white rounded-xl border border-td-border animate-pulse" />}>
+            <SalaryTable
+              initialData={salaries as any}
+              initialMeta={{ total, page: 1, limit: total, totalPages: 1 }}
+              showCompanyColumn={false}
+            />
+          </Suspense>
         </div>
       </div>
     </>
